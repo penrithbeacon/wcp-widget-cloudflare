@@ -1,0 +1,13 @@
+services:
+  cloudflare:
+    build: .
+    image: wcp-widget-cloudflare
+    container_name: wcp-widget-cloudflare
+    ports:
+      - "3742:3742"
+    volumes:
+      - cf-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  cf-data:

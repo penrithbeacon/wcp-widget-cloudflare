@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cloudflare Workers</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;
+    --text:#e6edf3;--muted:#8b949e;--accent:#f0883e;
+    --green:#3fb950;--red:#f85149;--yellow:#d29922;--blue:#58a6ff;--radius:8px;
+  }
+  html,body{height:100%;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;overflow:hidden;}
+  *::-webkit-scrollbar{width:8px;height:8px;}
+  *::-webkit-scrollbar-track{background:var(--surface2);}
+  *::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  *::-webkit-scrollbar-thumb:hover{background:var(--muted);}
+  *{scrollbar-color:var(--border) var(--surface2);scrollbar-width:thin;}
+  .wrap{display:flex;flex-direction:column;height:100%;}
+  .topbar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+  .title{font-size:14px;font-weight:600;flex:1;}
+  .count{font-size:11px;color:var(--muted);}
+  .btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:inherit;
+    font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .15s;}
+  .btn:hover{background:var(--border);border-color:var(--muted);}
+  .body{flex:1;overflow-y:auto;padding:14px 16px;}
+  .empty{text-align:center;color:var(--muted);font-size:12px;padding:40px 16px;}
+  .err{color:var(--red);font-size:12px;padding:14px;background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.2);border-radius:6px;}
+  .worker{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:12px 14px;margin-bottom:10px;}
+  .worker-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .worker-name{font-weight:600;font-size:13px;flex:1;font-family:'SF Mono',Monaco,monospace;}
+  .worker-meta{font-size:11px;color:var(--muted);}
+  .domain-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px;}
+  .chip{font-size:11px;background:var(--surface2);border:1px solid var(--border);
+    border-radius:4px;padding:2px 8px;color:var(--blue);text-decoration:none;}
+  .chip:hover{border-color:var(--accent);color:var(--accent);}
+  .actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .actions .btn{font-size:11px;padding:4px 10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="title">⚡ Workers</div>
+    <div class="count" id="count"></div>
+    <button class="btn" onclick="load(true)">Refresh</button>
+  </div>
+  <div class="body" id="body">
+    <div class="empty">Loading…</div>
+  </div>
+</div>
+
+<script>
+const WCP_INSTANCE_ID = "{{ wcp_instance_id|default('', true) }}";
+function wcpFetch(url, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({}, opts.headers || {}, WCP_INSTANCE_ID ? {'Wcp-Instance-Id': WCP_INSTANCE_ID} : {});
+  return fetch(url, opts);
+}
+async function load(force) {
+  const body = document.getElementById('body');
+  const count = document.getElementById('count');
+  if (force) body.innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    const r = await wcpFetch('/widget/api/workers');
+    const d = await r.json();
+    if (!d.success) {
+      body.innerHTML = `<div class="err">${escape(d.error || 'Unknown error')}</div>`;
+      count.textContent = '';
+      return;
+    }
+    const workers = d.data.workers || [];
+    count.textContent = workers.length ? `${workers.length} worker${workers.length===1?'':'s'}` : '';
+    if (!workers.length) { body.innerHTML = '<div class="empty">No workers found.</div>'; return; }
+    body.innerHTML = workers.map(w => {
+      const chips = w.domains.map(d =>
+        `<a class="chip" href="https://${escape(d.hostname)}" target="_blank" rel="noopener">${escape(d.hostname)}</a>`
+      ).join('');
+      const siteBtn = w.siteUrl
+        ? `<button class="btn" onclick="window.open('${escape(w.siteUrl)}','_blank')">Open Site ↗</button>`
+        : '';
+      const repoBtn = w.repoUrl
+        ? `<button class="btn" onclick="window.open('${escape(w.repoUrl)}','_blank')">Open Repo ↗</button>`
+        : '';
+      const modified = w.modifiedOn ? new Date(w.modifiedOn).toLocaleString() : '—';
+      return `
+        <div class="worker">
+          <div class="worker-head">
+            <div class="worker-name">${escape(w.id)}</div>
+            <div class="worker-meta">Modified ${escape(modified)}</div>
+          </div>
+          <div class="domain-chips">${chips || '<span style="font-size:11px;color:var(--muted);">No domains</span>'}</div>
+          <div class="actions">${siteBtn}${repoBtn}</div>
+        </div>`;
+    }).join('');
+  } catch (e) {
+    body.innerHTML = `<div class="err">${escape(e.message)}</div>`;
+  }
+}
+function escape(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+load();
+</script>
+</body>
+</html>

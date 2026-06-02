@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cloudflare Settings</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;
+    --text:#e6edf3;--muted:#8b949e;--accent:#f0883e;
+    --green:#3fb950;--red:#f85149;--yellow:#d29922;--blue:#58a6ff;--radius:8px;
+  }
+  html,body{height:100%;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;overflow:hidden;}
+  *::-webkit-scrollbar{width:8px;height:8px;}
+  *::-webkit-scrollbar-track{background:var(--surface2);}
+  *::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  *::-webkit-scrollbar-thumb:hover{background:var(--muted);}
+  *{scrollbar-color:var(--border) var(--surface2);scrollbar-width:thin;}
+  .wrap{display:flex;flex-direction:column;height:100%;}
+  .topbar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+  .title{font-size:14px;font-weight:600;flex:1;}
+  .status{font-size:11px;padding:3px 8px;border-radius:4px;}
+  .status.ok{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3);}
+  .status.warn{background:rgba(210,153,34,.15);color:var(--yellow);border:1px solid rgba(210,153,34,.3);}
+  .body{flex:1;overflow-y:auto;padding:20px 24px;}
+  .section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:16px 18px;margin-bottom:14px;}
+  .section h3{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.05em;margin-bottom:10px;}
+  .grid{display:grid;grid-template-columns:120px 1fr;gap:10px 14px;align-items:center;}
+  .grid label{font-size:12px;color:var(--muted);text-align:right;}
+  .grid input{background:var(--surface2);border:1px solid var(--border);color:var(--text);
+    border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;width:100%;}
+  .grid input:focus{outline:none;border-color:var(--accent);}
+  .hint{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;}
+  .repo-grid{display:grid;grid-template-columns:1fr 2fr auto;gap:8px;align-items:center;font-size:12px;}
+  .repo-grid input{background:var(--surface2);border:1px solid var(--border);color:var(--text);
+    border-radius:6px;padding:6px 10px;font-size:12px;font-family:'SF Mono',Monaco,monospace;}
+  .repo-grid input:focus{outline:none;border-color:var(--accent);}
+  .btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:inherit;
+    font-size:12px;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .15s;}
+  .btn:hover{background:var(--border);border-color:var(--muted);}
+  .btn-accent{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600;}
+  .btn-accent:hover{opacity:.85;background:var(--accent);}
+  .btn-danger{color:var(--red);border-color:rgba(248,81,73,.3);padding:4px 8px;font-size:11px;}
+  .btn-danger:hover{background:rgba(248,81,73,.1);}
+  .footer{display:flex;justify-content:flex-end;gap:8px;padding:14px 24px;border-top:1px solid var(--border);
+    flex-shrink:0;background:var(--bg);}
+  .saved{font-size:11px;color:var(--green);align-self:center;margin-right:8px;display:none;}
+  .saved.show{display:inline;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="title">⚙ Settings</div>
+    <div class="status warn" id="status">Loading…</div>
+  </div>
+  <div class="body">
+    <div class="section">
+      <h3>Cloudflare Credentials</h3>
+      <div class="grid">
+        <label for="token">API Token</label>
+        <input id="token" type="password" autocomplete="off" placeholder="paste new token to set or replace">
+        <label for="account">Account ID</label>
+        <input id="account" type="text" autocomplete="off" placeholder="32-character hex ID">
+      </div>
+      <div class="hint">
+        The API token must have at least <strong>Zone:Read</strong>, <strong>Workers Scripts:Read</strong>,
+        and <strong>DNS:Read</strong> scopes. See the Help component for step-by-step setup instructions.
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Worker → Repository URLs <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></h3>
+      <div id="repo-list"></div>
+      <button class="btn" style="margin-top:10px" onclick="addRepoRow()">+ Add mapping</button>
+      <div class="hint">
+        Map Worker IDs to their source code repository URLs. The Workers component shows
+        an "Open Repo" button for any worker that has a mapping here.
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <span class="saved" id="saved">✓ Saved</span>
+    <button class="btn" onclick="loadStatus()">Reload</button>
+    <button class="btn btn-accent" onclick="save()">Save Settings</button>
+  </div>
+</div>
+
+<script>
+const WCP_INSTANCE_ID = "{{ wcp_instance_id|default('', true) }}";
+function wcpFetch(url, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({}, opts.headers || {}, WCP_INSTANCE_ID ? {'Wcp-Instance-Id': WCP_INSTANCE_ID} : {});
+  return fetch(url, opts);
+}
+let _repos = {};
+
+async function loadStatus() {
+  try {
+    const r = await wcpFetch('/widget/api/config-status');
+    const d = await r.json();
+    document.getElementById('account').value = d.accountId || '';
+    document.getElementById('token').placeholder = d.apiTokenMasked
+      ? `Current: ${d.apiTokenMasked} — paste new to replace`
+      : 'paste your token';
+    document.getElementById('token').value = '';
+    _repos = d.workerRepos || {};
+    renderRepos();
+    const st = document.getElementById('status');
+    if (d.configured) { st.textContent = '✓ Configured'; st.className = 'status ok'; }
+    else { st.textContent = '⚠ Not configured'; st.className = 'status warn'; }
+  } catch (e) {
+    const st = document.getElementById('status');
+    st.textContent = '✗ Error: ' + e.message; st.className = 'status warn';
+  }
+}
+
+function renderRepos() {
+  const ids = Object.keys(_repos);
+  const list = document.getElementById('repo-list');
+  if (!ids.length) {
+    list.innerHTML = '<div class="hint" style="margin:0;">No mappings yet.</div>';
+    return;
+  }
+  list.innerHTML = ids.map(id => `
+    <div class="repo-grid" style="margin-bottom:6px;">
+      <input type="text" value="${escape(id)}" placeholder="worker-id" onchange="updateRepo(this,'${escape(id)}','id')">
+      <input type="text" value="${escape(_repos[id])}" placeholder="https://github.com/user/repo" onchange="updateRepo(this,'${escape(id)}','url')">
+      <button class="btn btn-danger" onclick="removeRepo('${escape(id)}')">Remove</button>
+    </div>`).join('');
+}
+
+function addRepoRow() {
+  const placeholder = `new-worker-${Object.keys(_repos).length + 1}`;
+  _repos[placeholder] = '';
+  renderRepos();
+}
+
+function updateRepo(el, oldId, kind) {
+  const row = el.closest('.repo-grid');
+  const idInput = row.querySelector('input:first-of-type');
+  const urlInput = row.querySelector('input:nth-of-type(2)');
+  const newId = idInput.value.trim();
+  const newUrl = urlInput.value.trim();
+  if (oldId !== newId) {
+    delete _repos[oldId];
+  }
+  if (newId) _repos[newId] = newUrl;
+  if (kind === 'id') renderRepos();
+}
+
+function removeRepo(id) {
+  delete _repos[id];
+  renderRepos();
+}
+
+async function save() {
+  const body = {
+    accountId: document.getElementById('account').value.trim(),
+    workerRepos: _repos,
+  };
+  const token = document.getElementById('token').value.trim();
+  if (token) body.apiToken = token;  // omit to preserve existing
+  try {
+    const r = await wcpFetch('/widget/configure', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+    });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'Save failed');
+    const s = document.getElementById('saved');
+    s.classList.add('show');
+    setTimeout(() => s.classList.remove('show'), 2000);
+    loadStatus();
+  } catch (e) {
+    alert('Save failed: ' + e.message);
+  }
+}
+
+function escape(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+loadStatus();
+</script>
+</body>
+</html>

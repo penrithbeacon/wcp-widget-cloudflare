@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cloudflare Help</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;
+    --text:#e6edf3;--muted:#8b949e;--accent:#f0883e;
+    --green:#3fb950;--red:#f85149;--yellow:#d29922;--blue:#58a6ff;--radius:8px;
+  }
+  html,body{height:100%;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;overflow:hidden;}
+  *::-webkit-scrollbar{width:8px;height:8px;}
+  *::-webkit-scrollbar-track{background:var(--surface2);}
+  *::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  *::-webkit-scrollbar-thumb:hover{background:var(--muted);}
+  *{scrollbar-color:var(--border) var(--surface2);scrollbar-width:thin;}
+  .wrap{display:flex;flex-direction:column;height:100%;}
+  .topbar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
+  .title{font-size:14px;font-weight:600;flex:1;}
+  .body{flex:1;overflow-y:auto;padding:20px 28px;max-width:820px;margin:0 auto;width:100%;line-height:1.6;}
+  h2{font-size:16px;font-weight:700;color:var(--accent);margin:24px 0 10px;}
+  h2:first-child{margin-top:0;}
+  h3{font-size:13px;font-weight:600;color:var(--text);margin:14px 0 6px;}
+  p{font-size:13px;color:var(--text);margin-bottom:10px;}
+  ul,ol{margin:6px 0 12px 22px;font-size:13px;color:var(--text);}
+  li{margin-bottom:4px;}
+  code{background:var(--surface2);border:1px solid var(--border);border-radius:3px;
+    padding:1px 6px;font-family:'SF Mono',Monaco,monospace;font-size:12px;color:var(--accent);}
+  a{color:var(--blue);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  .callout{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:6px;padding:12px 16px;margin:12px 0;font-size:12px;}
+  .callout strong{color:var(--accent);}
+  .component-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin:10px 0;}
+  .comp-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px 12px;}
+  .comp-card .nm{font-weight:600;font-size:12px;color:var(--accent);margin-bottom:4px;}
+  .comp-card .ds{font-size:11px;color:var(--muted);line-height:1.5;}
+  hr{border:none;border-top:1px solid var(--border);margin:20px 0;}
+  .about-row{display:flex;align-items:center;gap:14px;padding:12px 0;}
+  .about-icon{width:48px;height:48px;border-radius:10px;background:var(--accent);display:flex;
+    align-items:center;justify-content:center;flex-shrink:0;color:#0d1117;font-weight:700;font-size:20px;}
+  .about-text{flex:1;}
+  .about-text strong{font-size:14px;display:block;margin-bottom:2px;}
+  .about-text span{font-size:12px;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="title">📘 Help</div>
+  </div>
+  <div class="body">
+
+    <h2>About this widget</h2>
+    <p>The Cloudflare WCP widget gives you a quick view of your Cloudflare account
+    inside Penrith Beacon WCP Dashboard. It calls the Cloudflare API directly
+    using your own API token — no data passes through any third party.</p>
+
+    <p>The widget exposes <strong>four components</strong>, each sized at
+    <code>12 × 6</code> by default. That's a full stave in standard Penrith Beacon
+    WCP layout. The intent is that you create a dedicated "Cloudflare"
+    orchestration with four staves — one per component — and use the
+    Orchestration Manager to switch to it when you want to manage Cloudflare.
+    You can complement those staves with link cards, snippets, or other
+    widgets that fit your Cloudflare workflow.</p>
+
+    <div class="components-list">
+      <h3>Components</h3>
+      <div class="component-list">
+        <div class="comp-card"><div class="nm">Workers</div><div class="ds">List your Workers with their domains. Open Site / Open Repo buttons.</div></div>
+        <div class="comp-card"><div class="nm">Domains + DNS</div><div class="ds">All your zones in a left pane. Click a domain to see its DNS records in the right pane.</div></div>
+        <div class="comp-card"><div class="nm">Settings</div><div class="ds">Edit your API token, Account ID, and Worker → repo URL mappings without leaving the dashboard.</div></div>
+      </div>
+    </div>
+
+    <hr>
+
+    <h2>Setup Guide</h2>
+    <p>You need two pieces of information from Cloudflare:</p>
+
+    <h3>1. Find your Account ID</h3>
+    <ol>
+      <li>Log in to the <a href="https://dash.cloudflare.com" target="_blank" rel="noopener">Cloudflare dashboard</a></li>
+      <li>Pick any domain (or go to the Workers &amp; Pages section)</li>
+      <li>Look at the right-hand sidebar — your <strong>Account ID</strong> is a 32-character hex string</li>
+      <li>Click the copy icon next to it</li>
+    </ol>
+
+    <h3>2. Create an API Token</h3>
+    <ol>
+      <li>Go to <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener">My Profile → API Tokens</a></li>
+      <li>Click <strong>Create Token</strong></li>
+      <li>Use the <strong>Custom token</strong> template (most flexible)</li>
+      <li>Add these permissions:
+        <ul>
+          <li><code>Zone</code> → <code>Zone</code> → <code>Read</code></li>
+          <li><code>Zone</code> → <code>DNS</code> → <code>Read</code></li>
+          <li><code>Account</code> → <code>Workers Scripts</code> → <code>Read</code></li>
+          <li><code>Account</code> → <code>Worker Routes</code> → <code>Read</code> (for domains list)</li>
+        </ul>
+      </li>
+      <li>Set <strong>Account Resources</strong> to your account, <strong>Zone Resources</strong> to All zones</li>
+      <li>Click <strong>Continue to summary</strong> → <strong>Create Token</strong></li>
+      <li>Copy the token immediately — Cloudflare only shows it once</li>
+    </ol>
+
+    <h3>3. Configure the widget</h3>
+    <p>Open the <strong>Settings</strong> component (one of the four components in this widget) and paste both values in. Click <strong>Save Settings</strong>. The Workers and Domains components should now show your live data.</p>
+
+    <div class="callout">
+      <strong>Tip.</strong> The Account ID and API Token can also be set when you first add this widget to a stave — the dashboard's standard widget configuration form picks them up automatically. The Settings component is for editing them later or for adding Worker → repo mappings.
+    </div>
+
+    <hr>
+
+    <h2>FAQ</h2>
+
+    <h3>Where is the data stored?</h3>
+    <p>All credentials and worker→repo mappings live in <code>/app/data/config.json</code> inside this container's named Docker volume. They never leave your machine except in API calls direct to Cloudflare.</p>
+
+    <h3>How fresh is the data?</h3>
+    <p>Workers and DNS results are cached for 30 seconds; zones for 120 seconds. Click the Refresh button to bypass the cache.</p>
+
+    <h3>Can I add a widget that's already on Cloudflare's UI but missing here?</h3>
+    <p>Open an issue at the project repository (see About below). The widget intentionally focuses on Workers + Domains + DNS — the three things most often glanced at — but more components can be added as needs emerge.</p>
+
+    <h3>What if my API token leaks?</h3>
+    <p>Revoke it immediately from <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener">My Profile → API Tokens</a>, generate a new one, paste it into the Settings component.</p>
+
+    <hr>
+
+    <h2>About</h2>
+    <div class="about-row">
+      <div class="about-icon">⚡</div>
+      <div class="about-text">
+        <strong>Cloudflare WCP Widget</strong>
+        <span>Part of the Penrith Beacon WCP suite.</span>
+      </div>
+    </div>
+    <ul>
+      <li><strong>Penrith Beacon</strong> — <a href="https://penrithbeacon.com" target="_blank" rel="noopener">penrithbeacon.com</a></li>
+      <li><strong>Widget Context Protocol specification</strong> — <a href="https://widgetcontextprotocol.com" target="_blank" rel="noopener">widgetcontextprotocol.com</a></li>
+      <li><strong>Cloudflare API documentation</strong> — <a href="https://developers.cloudflare.com/api/" target="_blank" rel="noopener">developers.cloudflare.com/api</a></li>
+    </ul>
+
+  </div>
+</div>
+</body>
+</html>
