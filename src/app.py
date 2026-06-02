@@ -19,9 +19,26 @@ DATA_DIR = "/app/data"
 GLOBAL_CONFIG_FILE = os.path.join(DATA_DIR, "config.json")  # backward compat / fallback
 CF_BASE = "https://api.cloudflare.com/client/v4"
 
+# ── CORS ──────────────────────────────────────────────────────────────────────
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin']  = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = (
+        'Content-Type, Wcp-Instance-Id, Wcp-Dashboard-Id, Wcp-Version, Wcp-Widget-Id'
+    )
+    return response
+
+@app.route('/widget/<path:p>', methods=['OPTIONS'])
+@app.route('/widget/', methods=['OPTIONS'])
+@app.route('/wcp', methods=['OPTIONS'])
+def cors_preflight(p=''):
+    return Response('', status=204)
+
 # ── Instance ID helpers ───────────────────────────────────────────────────────
 
-# Per WCP 1.3.1: read Wcp-Instance-Id from the header first, falling back to a
+# Per WCP 1.4.0: read Wcp-Instance-Id from the header first, falling back to a
 # ?wcpInstanceId=<uuid> query parameter for iframe loads (which can't add headers).
 def get_instance_id():
     iid = request.headers.get("Wcp-Instance-Id", "").strip()
@@ -115,9 +132,10 @@ ICON_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
 </svg>"""
 
 WCP_MANIFEST = {
-    "wcp": "1.3.1",
+    "wcp": "1.4.0",
+    "uuid": "e7cf3182-b4d5-4389-8019-02181d897ef3",
     "name": "Cloudflare",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": (
         "Cloudflare Workers, Domains, DNS records — four components designed for "
         "a dedicated Cloudflare orchestration. Use your own API token and Account ID."
@@ -195,6 +213,21 @@ WCP_MANIFEST = {
 
 # ── WCP boilerplate endpoints ─────────────────────────────────────────────────
 
+@app.route("/wcp")
+def container_directory():
+    return jsonify({
+        "type":    "directory",
+        "wcp":     "1.4.0",
+        "widgets": [{
+            "id":          "cloudflare",
+            "uuid":        WCP_MANIFEST["uuid"],
+            "name":        WCP_MANIFEST["name"],
+            "description": WCP_MANIFEST["description"],
+            "icon":        WCP_MANIFEST["icon"],
+            "manifest":    "/widget/wcp",
+        }]
+    })
+
 @app.route("/widget/")
 @app.route("/widget/index.html")
 def widget_root():
@@ -214,9 +247,11 @@ def widget_icon():
 
 @app.route("/widget/api/guids")
 def api_guids():
-    return jsonify({"components": [
-        {"id": c["id"], "uuid": c["uuid"], "name": c["name"]}
-        for c in WCP_MANIFEST.get("components", [])
+    return jsonify({
+        "uuid": WCP_MANIFEST["uuid"],
+        "components": [
+            {"id": c["id"], "uuid": c["uuid"], "name": c["name"]}
+            for c in WCP_MANIFEST.get("components", [])
     ]})
 
 @app.route("/widget/export.wcp")
