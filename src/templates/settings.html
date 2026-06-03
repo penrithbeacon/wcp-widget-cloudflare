@@ -90,10 +90,16 @@
 </div>
 
 <script>
-const WCP_INSTANCE_ID = "{{ wcp_instance_id|default('', true) }}";
+const WCP_INSTANCE_ID      = "{{ wcp_instance_id|default('', true) }}";
+const WCP_ORCHESTRATION_ID = "{{ wcp_orchestration_id|default('', true) }}";
+const WCP_APPLICATION_ID   = "{{ wcp_application_id|default('', true) }}";
 function wcpFetch(url, opts){
   opts = opts || {};
-  opts.headers = Object.assign({}, opts.headers || {}, WCP_INSTANCE_ID ? {'Wcp-Instance-Id': WCP_INSTANCE_ID} : {});
+  const extra = {};
+  if (WCP_INSTANCE_ID)      extra['Wcp-Instance-Id']      = WCP_INSTANCE_ID;
+  if (WCP_ORCHESTRATION_ID) extra['Wcp-Orchestration-Id'] = WCP_ORCHESTRATION_ID;
+  if (WCP_APPLICATION_ID)   extra['Wcp-Application-Id']   = WCP_APPLICATION_ID;
+  opts.headers = Object.assign({}, opts.headers || {}, extra);
   return fetch(url, opts);
 }
 let _repos = {};

@@ -26,7 +26,8 @@ def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin']  = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, OPTIONS'
     response.headers['Access-Control-Allow-Headers'] = (
-        'Content-Type, Wcp-Instance-Id, Wcp-Dashboard-Id, Wcp-Version, Wcp-Widget-Id'
+        'Content-Type, Wcp-Instance-Id, Wcp-Dashboard-Id, Wcp-Version, Wcp-Widget-Id, '
+        'Wcp-Orchestration-Id, Wcp-Application-Id'
     )
     return response
 
@@ -38,13 +39,32 @@ def cors_preflight(p=''):
 
 # ── Instance ID helpers ───────────────────────────────────────────────────────
 
-# Per WCP 1.4.0: read Wcp-Instance-Id from the header first, falling back to a
-# ?wcpInstanceId=<uuid> query parameter for iframe loads (which can't add headers).
+# Per WCP 1.5.0: read context headers from request (header first, then query param fallback).
 def get_instance_id():
     iid = request.headers.get("Wcp-Instance-Id", "").strip()
     if not iid:
         iid = (request.args.get("wcpInstanceId", "") or "").strip()
     return iid
+
+def get_orchestration_id():
+    oid = request.headers.get("Wcp-Orchestration-Id", "").strip()
+    if not oid:
+        oid = (request.args.get("wcpOrchestrationId", "") or "").strip()
+    return oid
+
+def get_application_id():
+    aid = request.headers.get("Wcp-Application-Id", "").strip()
+    if not aid:
+        aid = (request.args.get("wcpApplicationId", "") or "").strip()
+    return aid
+
+def get_state_key():
+    """WCP 1.5.0 compound state key. See widgetcontextprotocol.com — WCP Request Headers."""
+    orch_id = get_orchestration_id()
+    app_id  = get_application_id()
+    if orch_id and app_id: return f"{orch_id}:{app_id}"
+    if orch_id:            return orch_id
+    return "global"
 
 def _safe_iid(iid):
     # Defence against path traversal — only allow uuid-ish chars
@@ -132,10 +152,10 @@ ICON_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
 </svg>"""
 
 WCP_MANIFEST = {
-    "wcp": "1.4.0",
+    "wcp": "1.5.0",
     "uuid": "e7cf3182-b4d5-4389-8019-02181d897ef3",
     "name": "Cloudflare",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "description": (
         "Cloudflare Workers, Domains, DNS records — four components designed for "
         "a dedicated Cloudflare orchestration. Use your own API token and Account ID."
@@ -217,7 +237,7 @@ WCP_MANIFEST = {
 def container_directory():
     return jsonify({
         "type":    "directory",
-        "wcp":     "1.4.0",
+        "wcp":     "1.5.0",
         "widgets": [{
             "id":          "cloudflare",
             "uuid":        WCP_MANIFEST["uuid"],
@@ -231,7 +251,8 @@ def container_directory():
 @app.route("/widget/")
 @app.route("/widget/index.html")
 def widget_root():
-    return render_template("widget.html", manifest=WCP_MANIFEST, wcp_instance_id=get_instance_id())
+    return render_template("widget.html", manifest=WCP_MANIFEST, wcp_instance_id=get_instance_id(),
+        wcp_orchestration_id=get_orchestration_id(), wcp_application_id=get_application_id())
 
 @app.route("/widget/wcp")
 def widget_wcp():
@@ -283,19 +304,23 @@ Port: 3742 | Spec: https://widgetcontextprotocol.com
 
 @app.route("/widget/workers")
 def page_workers():
-    return render_template("workers.html", manifest=WCP_MANIFEST, wcp_instance_id=get_instance_id())
+    return render_template("workers.html", manifest=WCP_MANIFEST, wcp_instance_id=get_instance_id(),
+        wcp_orchestration_id=get_orchestration_id(), wcp_application_id=get_application_id())
 
 @app.route("/widget/domains")
 def page_domains():
-    return render_template("domains.html", manifest=WCP_MANIFEST, wcp_instance_id=get_instance_id())
+    return render_template("domains.html", manifest=WCP_MANIFEST, wcp_instance_id=get_instance_id(),
+        wcp_orchestration_id=get_orchestration_id(), wcp_application_id=get_application_id())
 
 @app.route("/widget/settings")
 def page_settings():
-    return render_template("settings.html", manifest=WCP_MANIFEST, wcp_instance_id=get_instance_id())
+    return render_template("settings.html", manifest=WCP_MANIFEST, wcp_instance_id=get_instance_id(),
+        wcp_orchestration_id=get_orchestration_id(), wcp_application_id=get_application_id())
 
 @app.route("/widget/help")
 def page_help():
-    return render_template("help.html", manifest=WCP_MANIFEST, wcp_instance_id=get_instance_id())
+    return render_template("help.html", manifest=WCP_MANIFEST, wcp_instance_id=get_instance_id(),
+        wcp_orchestration_id=get_orchestration_id(), wcp_application_id=get_application_id())
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 
