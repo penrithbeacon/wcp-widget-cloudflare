@@ -8,9 +8,9 @@ your dashboard.
 **Specification:** [widgetcontextprotocol.com](https://widgetcontextprotocol.com)  
 **Part of the** [Penrith Beacon WCP](https://penrithbeacon.com) widget suite.
 
-> **WCP 1.4.0 certified.** This widget implements the full
-> [Widget Context Protocol 1.4.0](https://widgetcontextprotocol.com) specification,
-> including server UUID, Container Directory (`GET /wcp`), and all four `Wcp-*` request headers.
+> **WCP 1.5.0 certified.** This widget implements the full
+> [Widget Context Protocol 1.5.0](https://widgetcontextprotocol.com) specification,
+> including server UUID, Container Directory (`GET /wcp`), all six `Wcp-*` request headers, and context-scoped runtime state isolation (`Wcp-Orchestration-Id`, `Wcp-Application-Id`).
 
 ---
 
