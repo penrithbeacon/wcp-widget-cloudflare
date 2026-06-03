@@ -65,7 +65,7 @@ Then open the **Settings** component and paste both values in.
 
 ## WCP Request Headers
 
-This widget supports the WCP 1.5.0 request headers:
+This widget supports the WCP 2.0.0 request headers:
 
 | Header | Required | Description |
 |--------|----------|-------------|
@@ -80,9 +80,9 @@ This widget supports the WCP 1.5.0 request headers:
 
 | Endpoint | Description |
 |----------|-------------|
-| `GET /wcp` | WCP 1.5.0 Container Directory |
+| `GET /wcp` | WCP 2.0.0 Container Directory |
 | `GET /widget/` | Compact widget card (iframe) |
-| `GET /widget/wcp` | WCP 1.5.0 manifest |
+| `GET /widget/wcp` | WCP 2.0.0 manifest |
 | `GET /widget/health` | Health check |
 | `GET /widget/icon.svg` | Widget icon (SVG) |
 | `GET /widget/workers` | Workers component page |
@@ -101,8 +101,8 @@ This widget supports the WCP 1.5.0 request headers:
 
 | Property | Value |
 |----------|-------|
-| WCP Version | 1.5.0 |
-| Widget Version | 1.0.1 |
+| WCP Version | 2.0.0 |
+| Widget Version | 1.1.0 |
 | Render mode | iframe |
 | Auth | none (credentials stored server-side) |
 | Default card size | 12 × 6 |
@@ -121,7 +121,8 @@ This widget supports the WCP 1.5.0 request headers:
 | Tag | Description |
 |-----|-------------|
 | `latest` | Latest stable release |
-| `1.0.1-wcp1.4.0` | Widget v1.0.1, WCP 1.5.0 — server UUID, Container Directory, Wcp-Widget-Id CORS |
+| `1.1.0-wcp2.0.0` | Widget v1.1.0, WCP 2.0.0 — container block, manifest image source |
+| `1.0.1-wcp1.4.0` | Widget v1.0.1, WCP 2.0.0 — server UUID, Container Directory, Wcp-Widget-Id CORS |
 | `1.0.0-wcp1.3.1` | Widget v1.0.0, WCP 1.3.1 — initial release |
 
 ## Source
