@@ -16,7 +16,7 @@ docker run -d \
   -p 3742:3742 \
   -v cf-data:/app/data \
   --restart unless-stopped \
-  penrithbeacon/wcp-widget-cloudflare:latest
+  docker.io/penrithbeacon/wcp-widget-cloudflare:latest
 ```
 
 Then add it to your WCP dashboard at the container's network address.
@@ -26,7 +26,7 @@ Then add it to your WCP dashboard at the container's network address.
 ```yaml
 services:
   cloudflare:
-    image: penrithbeacon/wcp-widget-cloudflare:latest
+    image: docker.io/penrithbeacon/wcp-widget-cloudflare:latest
     container_name: wcp-widget-cloudflare
     ports:
       - "3742:3742"

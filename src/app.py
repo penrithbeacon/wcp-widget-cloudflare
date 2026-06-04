@@ -163,7 +163,8 @@ WCP_MANIFEST = {
     "icon": "/widget/icon.svg",
     "health": "/widget/health",
     "container": {
-        "image":            "penrithbeacon/wcp-widget-cloudflare",
+        "image":            "docker.io/penrithbeacon/wcp-widget-cloudflare",
+        "source":           {"type": "registry"},
         "tag":              "1.1.0-wcp2.0.0",
         "port":             3742,
         "volumes":          [{"name": "cf-data", "mountPath": "/app/data"}],
