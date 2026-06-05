@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Cloudflare Widget</title>
+<script type="application/ld+json">{{ jsonld|safe }}</script>
 <style>
   html,body{margin:0;padding:0;height:100%;background:var(--bg,#0d1117);color:var(--text,#e6edf3);
     font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;}
@@ -25,5 +26,13 @@
       <li><a href="/widget/help">Help</a></li>
     </ul>
   </div>
+<script>
+  window.parent?.postMessage({ type: 'wcp:ready' }, '*');
+  window.addEventListener('message', e => {
+    if (e.data?.type === 'wcp:context' && e.data.theme)
+      for (const [k, v] of Object.entries(e.data.theme))
+        document.documentElement.style.setProperty(k, v);
+  });
+</script>
 </body>
 </html>

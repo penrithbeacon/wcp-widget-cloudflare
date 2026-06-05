@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Cloudflare Domains + DNS</title>
+<script type="application/ld+json">{{ jsonld|safe }}</script>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   :root{
@@ -211,6 +212,12 @@ splitter.addEventListener('mousedown', e => {
 });
 
 reload();
+window.parent?.postMessage({ type: 'wcp:ready' }, '*');
+window.addEventListener('message', e => {
+  if (e.data?.type === 'wcp:context' && e.data.theme)
+    for (const [k, v] of Object.entries(e.data.theme))
+      document.documentElement.style.setProperty(k, v);
+});
 </script>
 </body>
 </html>

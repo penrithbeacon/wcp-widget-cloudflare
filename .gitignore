@@ -1,3 +1,4 @@
 data/
+published/
 __pycache__/
 *.pyc

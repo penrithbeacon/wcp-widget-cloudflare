@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Cloudflare Settings</title>
+<script type="application/ld+json">{{ jsonld|safe }}</script>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
   :root{
@@ -189,6 +190,12 @@ async function save() {
 
 function escape(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 loadStatus();
+window.parent?.postMessage({ type: 'wcp:ready' }, '*');
+window.addEventListener('message', e => {
+  if (e.data?.type === 'wcp:context' && e.data.theme)
+    for (const [k, v] of Object.entries(e.data.theme))
+      document.documentElement.style.setProperty(k, v);
+});
 </script>
 </body>
 </html>
