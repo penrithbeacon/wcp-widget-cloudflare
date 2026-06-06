@@ -155,7 +155,7 @@ WCP_MANIFEST = {
     "wcp": "2.1.0",
     "uuid": "e7cf3182-b4d5-4389-8019-02181d897ef3",
     "name": "Cloudflare",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "description": (
         "Cloudflare Workers, Domains, DNS records — four components designed for "
         "a dedicated Cloudflare orchestration. Use your own API token and Account ID."
@@ -165,7 +165,7 @@ WCP_MANIFEST = {
     "container": {
         "image":            "docker.io/penrithbeacon/wcp-widget-cloudflare",
         "source":           {"type": "registry"},
-        "tag":              "1.2.0-wcp2.1.0",
+        "tag":              "1.3.0-wcp2.1.0",
         "port":             3742,
         "volumes":          [{"name": "cf-data", "mountPath": "/app/data"}],
         "defaultLifecycle": "always",
