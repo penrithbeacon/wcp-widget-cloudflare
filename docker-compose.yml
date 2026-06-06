@@ -8,6 +8,8 @@ services:
     volumes:
       - cf-data:/app/data
       - ./published:/app/published
+    environment:
+      - CONTAINER_NAME=wcp-widget-cloudflare
     restart: unless-stopped
 
 volumes:
