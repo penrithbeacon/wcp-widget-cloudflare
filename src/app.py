@@ -204,7 +204,7 @@ WCP_MANIFEST = {
             "path": "/widget/workers",
             "icon": "/widget/icon.svg",
             "renderMode": "iframe",
-            "defaultSize": {"w": 12, "h": 6},
+            "defaultSize": {"w": 12, "h": 12},
         },
         {
             "id": "cf-domains",
@@ -214,7 +214,7 @@ WCP_MANIFEST = {
             "path": "/widget/domains",
             "icon": "/widget/icon.svg",
             "renderMode": "iframe",
-            "defaultSize": {"w": 12, "h": 6},
+            "defaultSize": {"w": 12, "h": 12},
         },
         {
             "id": "cf-settings",
@@ -224,7 +224,7 @@ WCP_MANIFEST = {
             "path": "/widget/settings",
             "icon": "/widget/icon.svg",
             "renderMode": "iframe",
-            "defaultSize": {"w": 12, "h": 6},
+            "defaultSize": {"w": 12, "h": 12},
         },
         {
             "id": "cf-help",
@@ -234,7 +234,7 @@ WCP_MANIFEST = {
             "path": "/widget/help",
             "icon": "/widget/icon.svg",
             "renderMode": "iframe",
-            "defaultSize": {"w": 12, "h": 6},
+            "defaultSize": {"w": 12, "h": 12},
         },
     ],
 }
