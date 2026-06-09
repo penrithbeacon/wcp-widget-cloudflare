@@ -155,7 +155,7 @@ WCP_MANIFEST = {
     "wcp": "2.1.0",
     "uuid": "e7cf3182-b4d5-4389-8019-02181d897ef3",
     "name": "Cloudflare",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": (
         "Cloudflare Workers, Domains, DNS records — four components designed for "
         "a dedicated Cloudflare orchestration. Use your own API token and Account ID."
@@ -165,7 +165,7 @@ WCP_MANIFEST = {
     "container": {
         "image":            "docker.io/penrithbeacon/wcp-widget-cloudflare",
         "source":           {"type": "registry"},
-        "tag":              "1.3.0-wcp2.1.0",
+        "tag":              "1.4.0-wcp2.1.0",
         "port":             3742,
         "volumes":          [{"name": "cf-data", "mountPath": "/app/data"}],
         "defaultLifecycle": "always",
@@ -321,6 +321,12 @@ def widget_wcp():
     manifest = dict(WCP_MANIFEST)
     manifest['web'] = {'published': os.path.exists(PUBLISHED_PATH)}
     return jsonify(manifest)
+
+@app.route("/widget/index")
+def widget_index():
+    return render_template("index-page.html", manifest=WCP_MANIFEST, jsonld=WIDGET_JSONLD,
+        wcp_instance_id=get_instance_id(),
+        wcp_orchestration_id=get_orchestration_id(), wcp_application_id=get_application_id())
 
 @app.route("/widget/health")
 def widget_health():

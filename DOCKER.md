@@ -101,8 +101,8 @@ This widget supports the WCP 2.0.0 request headers:
 
 | Property | Value |
 |----------|-------|
-| WCP Version | 2.0.0 |
-| Widget Version | 1.1.0 |
+| WCP Version | 2.1.0 |
+| Widget Version | 1.4.0 |
 | Render mode | iframe |
 | Auth | none (credentials stored server-side) |
 | Default card size | 12 × 6 |
